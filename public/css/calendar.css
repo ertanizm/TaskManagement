@@ -1,0 +1,250 @@
+.calendar-container {
+    padding: 24px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 20px;
+}
+
+/* Takvim Özelleştirmeleri */
+.fc {
+    font-family: 'Inter', sans-serif;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 2em;
+    padding: 0 1em;
+}
+
+.fc .fc-button-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.fc .fc-button-primary:hover {
+    background-color: #4F46E5;
+    border-color: #4F46E5;
+}
+
+.fc .fc-daygrid-day-number {
+    font-size: 0.875rem;
+    color: #1E293B;
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: #EEF2FF;
+}
+
+.fc .fc-event {
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 0.813rem;
+}
+
+/* Header Bilgi Stili */
+.calendar-info {
+    display: flex;
+    align-items: center;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: #64748B;
+    padding: 8px 16px;
+    background: #F8FAFC;
+    border-radius: 8px;
+}
+
+.info-item i {
+    color: var(--primary-color);
+}
+
+/* Modal Stilleri */
+.planning-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.planning-modal.show {
+    display: flex;
+}
+
+.planning-modal .modal-content {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    margin: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.planning-modal .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.planning-modal .modal-header h5 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.planning-modal .modal-body {
+    padding: 24px;
+}
+
+.date-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.planning-modal .form-group {
+    margin-bottom: 20px;
+}
+
+.planning-modal .form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #475569;
+}
+
+.planning-modal .form-group label i {
+    color: var(--primary-color);
+}
+
+.planning-modal .form-control {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: #F8FAFC;
+    transition: all 0.2s ease;
+}
+
+.planning-modal .form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    background: white;
+}
+
+.planning-modal .modal-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #F8FAFC;
+    border-radius: 0 0 16px 16px;
+}
+
+.btn-submit, .btn-cancel {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-submit {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+}
+
+.btn-cancel {
+    background: white;
+    color: #64748B;
+    border: 1px solid var(--border-color);
+}
+
+.btn-submit:hover {
+    background: #4F46E5;
+    transform: translateY(-1px);
+}
+
+.btn-cancel:hover {
+    background: #F1F5F9;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+    .calendar-container {
+        margin: 10px;
+        padding: 16px;
+    }
+
+    .date-range {
+        grid-template-columns: 1fr;
+    }
+
+    .planning-modal .modal-content {
+        margin: 10px;
+    }
+
+    .planning-modal .modal-body {
+        padding: 16px;
+    }
+}
+
+.modal-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #F8FAFC;
+    border-radius: 0 0 16px 16px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-delete {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #FEE2E2;
+    color: #EF4444;
+    border: none;
+}
+
+.btn-delete:hover {
+    background: #FCA5A5;
+    transform: translateY(-1px);
+} 

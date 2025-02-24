@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Takvim - İş Takip Sistemi</title>
+    <link rel="icon" type="image/x-icon" href="https://static-00.iconduck.com/assets.00/user-icon-1024x1024-dtzturco.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/calendar.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>İş Takip</h3>
+                <button class="btn-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h6 id="userName">Kullanıcı Adı</h6>
+                    <span id="userRole" class="user-role">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/dashboard" data-title="Ana Sayfa">
+                            <i class="bi bi-house-door"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tasks" data-title="Görevler">
+                            <i class="bi bi-list-task"></i>
+                            <span>Görevler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/requests" data-title="İstekler">
+                            <i class="bi bi-envelope"></i>
+                            <span>İstekler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/service" data-title="Servis">
+                            <i class="bi bi-folder"></i>
+                            <span>Servis</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/calendar" data-title="Takvim">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Takvim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/reports" data-title="Raporlar">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Raporlar</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-bottom">
+                        <a href="/settings" data-title="Ayarlar">
+                            <i class="bi bi-gear"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/logout" class="logout-link" data-title="Çıkış Yap">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h4>Planlama Takvimi</h4>
+                </div>
+                <div class="header-right">
+                    <div class="calendar-info">
+                        <span class="info-item">
+                            <i class="bi bi-info-circle"></i>
+                            Planlama yapmak için tarih aralığı seçin
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="calendar-container">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Planlama Modal -->
+    <div class="planning-modal" id="planningModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Yeni Planlama</h5>
+                <button class="btn-close" onclick="hidePlanningModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="planningForm">
+                    <div class="date-range">
+                        <div class="form-group">
+                            <label>
+                                <i class="bi bi-calendar-event"></i>
+                                Başlangıç Tarihi
+                            </label>
+                            <input type="text" class="form-control" id="startDate" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <i class="bi bi-calendar-check"></i>
+                                Bitiş Tarihi
+                            </label>
+                            <input type="text" class="form-control" id="endDate" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <i class="bi bi-pencil"></i>
+                            Başlık
+                        </label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <i class="bi bi-text-paragraph"></i>
+                            Açıklama
+                        </label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-delete" onclick="deletePlanning(this.getAttribute('data-event-id'))" style="display: none;">
+                    <i class="bi bi-trash"></i>
+                    Sil
+                </button>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="hidePlanningModal()">
+                        <i class="bi bi-x"></i>
+                        Kapat
+                    </button>
+                    <button class="btn-submit" onclick="savePlanning()">
+                        <i class="bi bi-check2"></i>
+                        Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/tr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let calendar;
+        let selectedStartDate = null;
+        let selectedEndDate = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kullanıcı bilgilerini çek
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(user => {
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userRole').textContent = user.role === 'admin' ? 'Yönetici' : 'Çalışan';
+                })
+                .catch(error => {
+                    console.error('Kullanıcı bilgileri alınamadı:', error);
+                });
+
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'tr',
+                selectable: true,
+                select: function(info) {
+                    if (!selectedStartDate) {
+                        selectedStartDate = info.start;
+                        Swal.fire({
+                            title: 'Başlangıç tarihi seçildi',
+                            text: 'Şimdi bitiş tarihini seçin',
+                            icon: 'info',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        selectedEndDate = info.end;
+                        showPlanningModal('create');
+                    }
+                },
+                eventClick: function(info) {
+                    // Planlama detaylarını modalda göster
+                    selectedStartDate = info.event.start;
+                    selectedEndDate = info.event.end;
+                    showPlanningModal('view', {
+                        id: info.event.id,
+                        title: info.event.title,
+                        description: info.event.extendedProps.description,
+                        user_name: info.event.extendedProps.user_name
+                    });
+                },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: '/api/plannings'
+            });
+
+            calendar.render();
+            loadPlannings();
+        });
+
+        function showPlanningModal(mode, eventData = null) {
+            const modal = document.getElementById('planningModal');
+            const titleInput = modal.querySelector('input[name="title"]');
+            const descriptionInput = modal.querySelector('textarea[name="description"]');
+            const modalTitle = modal.querySelector('.modal-header h5');
+            const deleteButton = modal.querySelector('.btn-delete');
+            const submitButton = modal.querySelector('.btn-submit');
+
+            document.getElementById('startDate').value = selectedStartDate.toLocaleDateString('tr-TR');
+            document.getElementById('endDate').value = selectedEndDate.toLocaleDateString('tr-TR');
+
+            if (mode === 'view') {
+                modalTitle.textContent = 'Planlama Detayları';
+                titleInput.value = eventData.title;
+                titleInput.readOnly = true;
+                descriptionInput.value = eventData.description;
+                descriptionInput.readOnly = true;
+                deleteButton.style.display = 'flex';
+                submitButton.style.display = 'none';
+                
+                // Silme butonuna event ID'sini ekle
+                deleteButton.setAttribute('data-event-id', eventData.id);
+            } else {
+                modalTitle.textContent = 'Yeni Planlama';
+                titleInput.value = '';
+                titleInput.readOnly = false;
+                descriptionInput.value = '';
+                descriptionInput.readOnly = false;
+                deleteButton.style.display = 'none';
+                submitButton.style.display = 'flex';
+            }
+
+            modal.classList.add('show');
+        }
+
+        function hidePlanningModal() {
+            document.getElementById('planningModal').classList.remove('show');
+            selectedStartDate = null;
+            selectedEndDate = null;
+            document.getElementById('planningForm').reset();
+        }
+
+        function savePlanning() {
+            const form = document.getElementById('planningForm');
+            const formData = new FormData(form);
+            const data = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                start_date: selectedStartDate.toISOString(),
+                end_date: selectedEndDate.toISOString()
+            };
+
+            fetch('/api/plannings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: 'Planlama başarıyla kaydedildi.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        hidePlanningModal();
+                        loadPlannings();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.error || 'Planlama kaydedilirken bir hata oluştu.',
+                        icon: 'error',
+                        confirmButtonText: 'Tamam'
+                    });
+                }
+            });
+        }
+
+        function loadPlannings() {
+            fetch('/api/plannings')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        calendar.removeAllEvents();
+                        calendar.addEventSource(data.plannings);
+                    }
+                });
+        }
+
+        // Planlama silme fonksiyonunu ekleyelim
+        function deletePlanning(eventId) {
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu planlama kalıcı olarak silinecek!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, sil',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/plannings/${eventId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Silindi!',
+                                text: 'Planlama başarıyla silindi.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                hidePlanningModal();
+                                loadPlannings();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Hata!',
+                                text: data.error || 'Planlama silinirken bir hata oluştu.',
+                                icon: 'error',
+                                confirmButtonText: 'Tamam'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

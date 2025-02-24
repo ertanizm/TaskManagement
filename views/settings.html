@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayarlar - İş Takip Sistemi</title>
+    <link rel="icon" type="image/x-icon" href="https://static-00.iconduck.com/assets.00/user-icon-1024x1024-dtzturco.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/settings.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>İş Takip</h3>
+                <button class="btn-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h6 id="userName">Kullanıcı Adı</h6>
+                    <span id="userRole" class="user-role">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/dashboard" data-title="Ana Sayfa">
+                            <i class="bi bi-house-door"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tasks" data-title="Görevler">
+                            <i class="bi bi-list-task"></i>
+                            <span>Görevler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/requests" data-title="İstekler">
+                            <i class="bi bi-envelope"></i>
+                            <span>İstekler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/service" data-title="Servis">
+                            <i class="bi bi-folder"></i>
+                            <span>Servis</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/calendar" data-title="Takvim">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Takvim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/reports" data-title="Raporlar">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Raporlar</span>
+                        </a>
+                    </li>
+                    <li class="active sidebar-bottom">
+                        <a href="/settings" data-title="Ayarlar">
+                            <i class="bi bi-gear"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/logout" class="logout-link" data-title="Çıkış Yap">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h4>Ayarlar</h4>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="settings-buttons">
+                    <button class="btn-setting" onclick="clearCompletedTasks()">
+                        <i class="bi bi-trash"></i>
+                        Tamamlanan İşleri Temizle
+                    </button>
+                    <button class="btn-setting" onclick="clearAnnouncements()">
+                        <i class="bi bi-trash"></i>
+                        Duyuruları Temizle
+                    </button>
+                    <button class="btn-setting" onclick="changePassword()">
+                        <i class="bi bi-key"></i>
+                        Kullanıcı Parola Değiştir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+
+            // Kullanıcı bilgilerini al ve göster
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userName').textContent = data.name;
+                    document.getElementById('userRole').textContent = 
+                        data.role === 'admin' ? 'Yönetici' : 'Çalışan';
+                });
+        });
+
+        function clearCompletedTasks() {
+            Swal.fire({
+                title: 'Şifre Gerekli',
+                input: 'password',
+                inputPlaceholder: 'Şifreyi girin',
+                showCancelButton: true,
+                confirmButtonText: 'Temizle',
+                cancelButtonText: 'İptal',
+                preConfirm: (password) => {
+                    if (password !== '2004') {
+                        Swal.showValidationMessage('Yanlış şifre!');
+                    }
+                    return password;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/api/tasks/clear-completed', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Başarılı!', 'Tamamlanan işler temizlendi.', 'success');
+                        } else {
+                            Swal.fire('Hata!', data.error, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function clearAnnouncements() {
+            Swal.fire({
+                title: 'Şifre Gerekli',
+                input: 'password',
+                inputPlaceholder: 'Şifreyi girin',
+                showCancelButton: true,
+                confirmButtonText: 'Temizle',
+                cancelButtonText: 'İptal',
+                preConfirm: (password) => {
+                    if (password !== '2004') {
+                        Swal.showValidationMessage('Yanlış şifre!');
+                    }
+                    return password;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/api/announcements/clear', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Başarılı!', 'Duyurular temizlendi.', 'success');
+                        } else {
+                            Swal.fire('Hata!', data.error, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function changePassword() {
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(user => {
+                    Swal.fire({
+                        title: 'Parola Değiştir',
+                        html: `
+                            <input type="text" id="username" class="swal2-input" value="${user.name}" readonly>
+                            <input type="email" id="email" class="swal2-input" placeholder="E-posta">
+                            <input type="password" id="newPassword" class="swal2-input" placeholder="Yeni Parola">
+                        `,
+                        showCancelButton: true,
+                        confirmButtonText: 'Değiştir',
+                        cancelButtonText: 'İptal',
+                        preConfirm: () => {
+                            const email = document.getElementById('email').value;
+                            const newPassword = document.getElementById('newPassword').value;
+                            return fetch('/api/user/change-password', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ email, newPassword })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (!data.success) {
+                                    throw new Error(data.error);
+                                }
+                                return data;
+                            })
+                            .catch(error => {
+                                Swal.showValidationMessage(error.message);
+                            });
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire('Başarılı!', 'Parolanız değiştirildi. Lütfen tekrar giriş yapın.', 'success')
+                            .then(() => {
+                                window.location.href = '/logout';
+                            });
+                        }
+                    });
+                });
+        }
+    </script>
+</body>
+</html> 

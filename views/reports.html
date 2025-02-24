@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raporlar - İş Takip Sistemi</title>
+    <link rel="icon" type="image/x-icon" href="https://static-00.iconduck.com/assets.00/user-icon-1024x1024-dtzturco.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/reports.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>İş Takip</h3>
+                <button class="btn-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h6 id="userName">Kullanıcı Adı</h6>
+                    <span id="userRole" class="user-role">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/dashboard" data-title="Ana Sayfa">
+                            <i class="bi bi-house-door"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tasks" data-title="Görevler">
+                            <i class="bi bi-list-task"></i>
+                            <span>Görevler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/requests" data-title="İstekler">
+                            <i class="bi bi-envelope"></i>
+                            <span>İstekler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/service" data-title="Servis">
+                            <i class="bi bi-folder"></i>
+                            <span>Servis</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/calendar" data-title="Takvim">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Takvim</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/reports" data-title="Raporlar">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Raporlar</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-bottom">
+                        <a href="/settings" data-title="Ayarlar">
+                            <i class="bi bi-gear"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/logout" class="logout-link" data-title="Çıkış Yap">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h4>Raporlar</h4>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="reports-topbar">
+                    <button class="report-tab active" data-report="requests">
+                        <i class="bi bi-envelope"></i>
+                        İstekler
+                    </button>
+                    <!-- <button class="report-tab" data-report="plannings">
+                        <i class="bi bi-calendar-event"></i>
+                        Planlamalar
+                    </button> -->
+                    <button class="report-tab" data-report="pending-tasks">
+                        <i class="bi bi-hourglass-split"></i>
+                        Bekleyen İşler
+                    </button>
+                    <button class="report-tab" data-report="in-progress-tasks">
+                        <i class="bi bi-arrow-repeat"></i>
+                        Devam Eden İşler
+                    </button>
+                    <button class="report-tab" data-report="completed-tasks">
+                        <i class="bi bi-check2-circle"></i>
+                        Yapılan İşler
+                    </button>
+                    <button class="report-tab" data-report="services">
+                        <i class="bi bi-tools"></i>
+                        Servisler
+                    </button>
+                </div>
+                <div class="report-content">
+                    <!-- Rapor içeriği buraya gelecek -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar toggle
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+
+            // Kullanıcı bilgilerini al ve göster
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userName').textContent = data.name;
+                    document.getElementById('userRole').textContent = 
+                        data.role === 'admin' ? 'Yönetici' : 'Çalışan';
+                });
+
+            // Tab değiştirme işlemleri
+            const reportTabs = document.querySelectorAll('.report-tab');
+            
+            reportTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Aktif tab'ı değiştir
+                    reportTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Seçilen rapora göre içeriği güncelle
+                    const reportType = tab.dataset.report;
+                    loadReportContent(reportType);
+                });
+            });
+
+            // Sayfa yüklendiğinde varsayılan olarak istekleri yükle
+            loadReportContent('requests');
+        });
+
+        function loadReportContent(reportType) {
+            const contentDiv = document.querySelector('.report-content');
+            
+            if (reportType === 'requests') {
+                fetch('/api/requests')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            contentDiv.innerHTML = `
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Başlık</th>
+                                            <th>Açıklama</th>
+                                            <th>Modül</th>
+                                            <th>Durum</th>
+                                            <th>Oluşturulma Tarihi</th>
+                                            <th>İşlem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.requests.map(request => `
+                                            <tr>
+                                                <td>${request.id}</td>
+                                                <td>${request.title}</td>
+                                                <td>${request.description}</td>
+                                                <td><span class="module-badge">${request.module}</span></td>
+                                                <td><span class="status-badge ${request.status}">${request.status}</span></td>
+                                                <td>${formatDate(request.created_at)}</td>
+                                                <td>
+                                                    <button class="btn-delete" onclick="deleteRequest(${request.id})">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            contentDiv.innerHTML = '<p class="text-center text-muted my-5">İstekler yüklenirken bir hata oluştu.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('İstekler yüklenirken hata:', error);
+                        contentDiv.innerHTML = '<p class="text-center text-muted my-5">İstekler yüklenirken bir hata oluştu.</p>';
+                    });
+            } else if (reportType === 'pending-tasks') {
+                fetch('/api/tasks/pending')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            contentDiv.innerHTML = `
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Başlık</th>
+                                            <th>Açıklama</th>
+                                            <th>Öncelik</th>
+                                            <th>Oluşturan</th>
+                                            <th>Atanan</th>
+                                            <th>Bitiş Tarihi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.tasks.map(task => `
+                                            <tr>
+                                                <td>${task.id}</td>
+                                                <td>${task.title}</td>
+                                                <td>${task.description}</td>
+                                                <td><span class="priority-badge ${task.priority}">${task.priority}</span></td>
+                                                <td>${task.created_by}</td>
+                                                <td>${task.assigned_user_name || '-'}</td>
+                                                <td>${formatDate(task.due_date)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            contentDiv.innerHTML = '<p class="text-center text-muted my-5">Bekleyen işler yüklenirken bir hata oluştu.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Bekleyen işler yüklenirken hata:', error);
+                        contentDiv.innerHTML = '<p class="text-center text-muted my-5">Bekleyen işler yüklenirken bir hata oluştu.</p>';
+                    });
+            } else if (reportType === 'in-progress-tasks') {
+                fetch('/api/tasks/in-progress')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            contentDiv.innerHTML = `
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Başlık</th>
+                                            <th>Açıklama</th>
+                                            <th>Öncelik</th>
+                                            <th>Oluşturan</th>
+                                            <th>Atanan</th>
+                                            <th>Bitiş Tarihi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.tasks.map(task => `
+                                            <tr>
+                                                <td>${task.id}</td>
+                                                <td>${task.title}</td>
+                                                <td>${task.description}</td>
+                                                <td><span class="priority-badge ${task.priority}">${task.priority}</span></td>
+                                                <td>${task.created_by}</td>
+                                                <td>${task.assigned_user_name || '-'}</td>
+                                                <td>${formatDate(task.due_date)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            contentDiv.innerHTML = '<p class="text-center text-muted my-5">Devam eden işler yüklenirken bir hata oluştu.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Devam eden işler yüklenirken hata:', error);
+                        contentDiv.innerHTML = '<p class="text-center text-muted my-5">Devam eden işler yüklenirken bir hata oluştu.</p>';
+                    });
+            } else if (reportType === 'completed-tasks') {
+                fetch('/api/tasks/completed')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            contentDiv.innerHTML = `
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Başlık</th>
+                                            <th>Açıklama</th>
+                                            <th>Öncelik</th>
+                                            <th>Oluşturan</th>
+                                            <th>Atanan</th>
+                                            <th>Tamamlanma Tarihi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.tasks.map(task => `
+                                            <tr>
+                                                <td>${task.id}</td>
+                                                <td>${task.title}</td>
+                                                <td>${task.description}</td>
+                                                <td><span class="priority-badge ${task.priority}">${task.priority}</span></td>
+                                                <td>${task.created_by}</td>
+                                                <td>${task.assigned_user_name || '-'}</td>
+                                                <td>${formatDate(task.completed_date)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            contentDiv.innerHTML = '<p class="text-center text-muted my-5">Tamamlanan işler yüklenirken bir hata oluştu.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Tamamlanan işler yüklenirken hata:', error);
+                        contentDiv.innerHTML = '<p class="text-center text-muted my-5">Tamamlanan işler yüklenirken bir hata oluştu.</p>';
+                    });
+            } else if (reportType === 'services') {
+                fetch('/api/services')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            contentDiv.innerHTML = `
+                                <table class="report-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Müşteri Adı</th>
+                                            <th>Telefon</th>
+                                            <th>Vergi Dairesi</th>
+                                            <th>Vergi No</th>
+                                            <th>Yetkili Kişi</th>
+                                            <th>Müşteri Talebi</th>
+                                            <th>Açıklama</th>
+                                            <th>Oluşturan</th>
+                                            <th>Tarih</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${data.services.map(service => `
+                                            <tr>
+                                                <td>${service.id}</td>
+                                                <td>${service.customer_name}</td>
+                                                <td>${service.phone}</td>
+                                                <td>${service.tax_office}</td>
+                                                <td>${service.tax_number}</td>
+                                                <td>${service.authorized_person}</td>
+                                                <td>${service.customer_request}</td>
+                                                <td>${service.description}</td>
+                                                <td>${service.created_by}</td>
+                                                <td>${formatDate(service.created_at)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            `;
+                        } else {
+                            contentDiv.innerHTML = '<p class="text-center text-muted my-5">Servisler yüklenirken bir hata oluştu.</p>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Servisler yüklenirken hata:', error);
+                        contentDiv.innerHTML = '<p class="text-center text-muted my-5">Servisler yüklenirken bir hata oluştu.</p>';
+                    });
+            } else {
+                contentDiv.innerHTML = '<p class="text-center text-muted my-5">Bu rapor türü henüz uygulanmadı.</p>';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function deleteRequest(id) {
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu isteği silmek istediğinize emin misiniz?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#64748B',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/requests/${id}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Silindi!',
+                                'İstek başarıyla silindi.',
+                                'success'
+                            ).then(() => {
+                                loadReportContent('requests'); // Tabloyu yenile
+                            });
+                        } else {
+                            Swal.fire(
+                                'Hata!',
+                                data.error || 'İstek silinirken bir hata oluştu.',
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('İstek silme hatası:', error);
+                        Swal.fire(
+                            'Hata!',
+                            'İstek silinirken bir hata oluştu.',
+                            'error'
+                        );
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

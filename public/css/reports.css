@@ -1,0 +1,180 @@
+.dashboard-content {
+    padding: 24px;
+}
+
+.reports-topbar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+}
+
+.report-tab {
+    padding: 12px 24px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    color: #64748B;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.report-tab i {
+    font-size: 1.1rem;
+}
+
+.report-tab:hover {
+    background: #F8FAFC;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.report-tab.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Scrollbar stilleri */
+.reports-topbar::-webkit-scrollbar {
+    height: 6px;
+}
+
+.reports-topbar::-webkit-scrollbar-track {
+    background: #F1F5F9;
+    border-radius: 3px;
+}
+
+.reports-topbar::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 3px;
+}
+
+.reports-topbar::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+/* Diğer rapor stilleri buraya eklenecek */
+
+.report-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.report-table th {
+    background: #F8FAFC;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: #475569;
+    border-bottom: 2px solid #E2E8F0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.report-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #E2E8F0;
+    color: #1E293B;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.report-table tbody tr:hover {
+    background: #F8FAFC;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.yeni {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+.status-badge.mevcut {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.module-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: #EEF2FF;
+    color: #4F46E5;
+}
+
+.btn-delete {
+    background: none;
+    border: none;
+    color: #EF4444;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+    background: #FEE2E2;
+}
+
+.btn-delete i {
+    font-size: 1.1rem;
+}
+
+.priority-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.priority-badge.high {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+.priority-badge.medium {
+    background: #FEF3C7;
+    color: #D97706;
+}
+
+.priority-badge.low {
+    background: #ECFDF5;
+    color: #059669;
+}
+
+/* Açıklama ve müşteri talebi için daha geniş alan */
+.report-table td:nth-child(7),
+.report-table td:nth-child(8) {
+    max-width: 300px;
+}
+
+/* Hover durumunda tam metni göster */
+.report-table tr:hover td {
+    white-space: normal;
+    word-break: break-word;
+} 

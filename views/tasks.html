@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Görevler - İş Takip Sistemi</title>
+    <link rel="icon" type="image/x-icon" href="https://static-00.iconduck.com/assets.00/user-icon-1024x1024-dtzturco.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/tasks.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar kısmını güncelleyelim -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>İş Takip</h3>
+                <button class="btn-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h6 id="userName">Kullanıcı Adı</h6>
+                    <span id="userRole" class="user-role">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/dashboard" data-title="Ana Sayfa">
+                            <i class="bi bi-house-door"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/tasks" data-title="Görevler">
+                            <i class="bi bi-list-task"></i>
+                            <span>Görevler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/requests" data-title="İstekler">
+                            <i class="bi bi-envelope"></i>
+                            <span>İstekler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/service" data-title="Servis">
+                            <i class="bi bi-folder"></i>
+                            <span>Servis</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/calendar" data-title="Takvim">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Takvim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/reports" data-title="Raporlar">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Raporlar</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-bottom">
+                        <a href="/settings" data-title="Ayarlar">
+                            <i class="bi bi-gear"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/logout" class="logout-link" data-title="Çıkış Yap">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h4>Görevler</h4>
+                </div>
+                <div class="header-right">
+                    <button class="btn-archive" onclick="archiveCompletedTasks()">
+                        <i class="bi bi-archive"></i>
+                        Tamamlananları Temizle
+                    </button>
+                    <button class="btn-primary-custom" onclick="showNewTaskModal()">
+                        <i class="bi bi-plus-lg"></i>
+                        Yeni Görev
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="tasks-container">
+                    <!-- Görev Kartları -->
+                    <div class="task-columns">
+                        <div class="task-column">
+                            <div class="column-header">
+                                <h5>Bekleyen</h5>
+                                <span class="task-count">0</span>
+                            </div>
+                            <div class="task-list">
+                            </div>
+                        </div>
+
+                        <div class="task-column">
+                            <div class="column-header">
+                                <h5>Devam Eden</h5>
+                                <span class="task-count">2</span>
+                            </div>
+                            <div class="task-list">
+                                <!-- Devam eden görevler -->
+                            </div>
+                        </div>
+
+                        <div class="task-column">
+                            <div class="column-header">
+                                <h5>Tamamlanan</h5>
+                                <span class="task-count">5</span>
+                            </div>
+                            <div class="task-list">
+                                <!-- Tamamlanan görevler -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yeni Görev Modal -->
+    <div class="task-modal" id="newTaskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Yeni Görev Oluştur</h5>
+                <button class="btn-close" onclick="hideNewTaskModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="newTaskForm">
+                    <div class="form-group">
+                        <label>Görev Başlığı</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Öncelik</label>
+                                <select class="form-control" name="priority" required>
+                                    <option value="low">Düşük</option>
+                                    <option value="medium">Orta</option>
+                                    <option value="high">Yüksek</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Son Tarih</label>
+                                <input type="date" class="form-control" name="due_date" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group admin-only" style="display: none;">
+                        <label>Atanan Kişi</label>
+                        <select class="form-control" name="assigned_user_id">
+                            <option value="">Seçiniz...</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="hideNewTaskModal()">İptal</button>
+                <button class="btn-submit" onclick="saveTask()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Durum Güncelleme Modal -->
+    <div class="task-modal" id="updateStatusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Görev Durumu Güncelle</h5>
+                <button class="btn-close" onclick="hideUpdateStatusModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="updateStatusForm">
+                    <input type="hidden" id="updateTaskId">
+                    <div class="form-group">
+                        <label>Durum</label>
+                        <select class="form-control" id="taskStatus" required>
+                            <option value="pending">Bekleyen</option>
+                            <option value="in_progress">Devam Ediyor</option>
+                            <option value="completed">Tamamlandı</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="hideUpdateStatusModal()">İptal</button>
+                <button class="btn-submit" onclick="updateTaskStatus()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Modal işlemleri
+        function showNewTaskModal() {
+            document.getElementById('newTaskModal').classList.add('show');
+        }
+
+        function hideNewTaskModal() {
+            document.getElementById('newTaskModal').classList.remove('show');
+        }
+
+        // Görev kaydetme
+        function saveTask() {
+            const form = document.getElementById('newTaskForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            // Kullanıcı ID'sini ve varsayılan durumu ekle
+            data.user_id = document.getElementById('userName').dataset.userId;
+            data.status = 'pending'; // Yeni görevler bekleyen durumunda başlar
+
+            console.log('Gönderilecek görev verisi:', data);
+
+            fetch('/api/tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Sunucu yanıtı:', data);
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: 'Görev başarıyla oluşturuldu.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        hideNewTaskModal();
+                        loadTasks();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.error,
+                        icon: 'error',
+                        confirmButtonText: 'Tamam'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Görev kaydetme hatası:', error);
+            });
+        }
+
+        // Sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+            });
+        });
+
+        // Kullanıcı bilgilerini getirme kısmını da güncelleyelim
+        fetch('/api/user-info')
+            .then(response => response.json())
+            .then(data => {
+                const userName = document.getElementById('userName');
+                userName.textContent = data.name;
+                userName.dataset.userId = data.id; // Kullanıcı ID'sini saklayalım
+                
+                const roleText = data.role === 'admin' ? 'Yönetici' : 'Çalışan';
+                document.getElementById('userRole').textContent = roleText;
+
+                if (data.role === 'admin') {
+                    document.querySelector('.admin-only').style.display = 'block';
+                    loadEmployees();
+                }
+            });
+
+        // Çalışanları yükle
+        function loadEmployees() {
+            fetch('/api/users/employees')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.querySelector('select[name="assigned_user_id"]');
+                    data.employees.forEach(employee => {
+                        const option = document.createElement('option');
+                        option.value = employee.id;
+                        option.textContent = employee.name;
+                        select.appendChild(option);
+                    });
+                });
+        }
+
+        // Görevleri yükle
+        loadTasks();
+
+        function loadTasks() {
+            console.log('Görevler yükleniyor...');
+            fetch('/api/tasks')
+                .then(response => {
+                    console.log('API yanıtı:', response);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Gelen veri:', data);
+                    if (data.success) {
+                        const pendingList = document.querySelector('.task-column:nth-child(1) .task-list');
+                        const inProgressList = document.querySelector('.task-column:nth-child(2) .task-list');
+                        const completedList = document.querySelector('.task-column:nth-child(3) .task-list');
+
+                        // Listeleri temizle
+                        pendingList.innerHTML = '';
+                        inProgressList.innerHTML = '';
+                        completedList.innerHTML = '';
+
+                        let pendingCount = 0;
+                        let inProgressCount = 0;
+                        let completedCount = 0;
+
+                        if (data.tasks && data.tasks.length > 0) {
+                            data.tasks.forEach(task => {
+                                console.log('İşlenen görev:', task);
+                                const taskCard = createTaskCard(task);
+                                
+                                switch(task.status) {
+                                    case 'pending':
+                                        console.log('Bekleyen göreve ekleniyor:', task.title);
+                                        pendingList.appendChild(taskCard);
+                                        pendingCount++;
+                                        break;
+                                    case 'in_progress':
+                                        console.log('Devam eden göreve ekleniyor:', task.title);
+                                        inProgressList.appendChild(taskCard);
+                                        inProgressCount++;
+                                        break;
+                                    case 'completed':
+                                        console.log('Tamamlanan göreve ekleniyor:', task.title);
+                                        completedList.appendChild(taskCard);
+                                        completedCount++;
+                                        break;
+                                    default:
+                                        console.log('Bilinmeyen durum:', task.status);
+                                }
+                            });
+                        } else {
+                            console.log('Hiç görev bulunamadı');
+                        }
+
+                        // Sayaçları güncelle
+                        document.querySelector('.task-column:nth-child(1) .task-count').textContent = pendingCount;
+                        document.querySelector('.task-column:nth-child(2) .task-count').textContent = inProgressCount;
+                        document.querySelector('.task-column:nth-child(3) .task-count').textContent = completedCount;
+                    } else {
+                        console.error('Veri yükleme başarısız:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Görev yükleme hatası:', error);
+                });
+        }
+
+        function createTaskCard(task) {
+            const card = document.createElement('div');
+            card.className = 'task-card';
+            card.setAttribute('data-task-id', task.id);
+            card.innerHTML = `
+                <div class="task-priority ${task.priority}">${getPriorityText(task.priority)}</div>
+                <h6 class="task-title">${task.title}</h6>
+                <p class="task-description">${task.description}</p>
+                <div class="task-meta">
+                    <span class="task-date">
+                        <i class="bi bi-calendar3"></i>
+                        Son: ${formatDate(task.due_date)}
+                    </span>
+                    <span class="task-assignee">
+                        <i class="bi bi-person"></i>
+                        ${task.assigned_user_name || 'Atanmamış'}
+                    </span>
+                </div>
+                <div class="task-footer">
+                    <button class="btn-delete" onclick="deleteTask(${task.id}, event)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                    <div class="task-status">
+                        <span class="status-badge ${task.status}">
+                            ${getStatusText(task.status)}
+                        </span>
+                    </div>
+                </div>
+            `;
+
+            card.addEventListener('click', () => showUpdateStatusModal(task));
+            
+            return card;
+        }
+
+        function getPriorityText(priority) {
+            const priorities = {
+                'low': 'Düşük',
+                'medium': 'Orta',
+                'high': 'Yüksek'
+            };
+            return priorities[priority] || priority;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('tr-TR');
+        }
+
+        function getStatusText(status) {
+            const statuses = {
+                'pending': 'Bekleyen',
+                'in_progress': 'Devam Ediyor',
+                'completed': 'Tamamlandı'
+            };
+            return statuses[status] || status;
+        }
+
+        function showUpdateStatusModal(task) {
+            document.getElementById('updateTaskId').value = task.id;
+            document.getElementById('taskStatus').value = task.status;
+            document.getElementById('updateStatusModal').classList.add('show');
+        }
+
+        function hideUpdateStatusModal() {
+            document.getElementById('updateStatusModal').classList.remove('show');
+        }
+
+        function updateTaskStatus() {
+            const taskId = document.getElementById('updateTaskId').value;
+            const status = document.getElementById('taskStatus').value;
+
+            fetch(`/api/tasks/${taskId}/status`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ status })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: 'Görev durumu güncellendi.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        hideUpdateStatusModal();
+                        loadTasks();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.error,
+                        icon: 'error',
+                        confirmButtonText: 'Tamam'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Durum güncelleme hatası:', error);
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'Bir hata oluştu.',
+                    icon: 'error',
+                    confirmButtonText: 'Tamam'
+                });
+            });
+        }
+
+        function archiveCompletedTasks() {
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Tamamlanan görevler arşive taşınacak",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, temizle',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/api/tasks/archive-completed', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Başarılı!',
+                                text: `${data.archivedCount} görev arşivlendi`,
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                loadTasks(); // Görevleri yeniden yükle
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Hata!',
+                                text: data.error,
+                                icon: 'error',
+                                confirmButtonText: 'Tamam'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Arşivleme hatası:', error);
+                        Swal.fire({
+                            title: 'Hata!',
+                            text: 'Bir hata oluştu',
+                            icon: 'error',
+                            confirmButtonText: 'Tamam'
+                        });
+                    });
+                }
+            });
+        }
+
+        // Silme fonksiyonunu ekleyelim
+        function deleteTask(taskId, event) {
+            // Tıklama olayının yayılmasını engelle
+            event.stopPropagation();
+
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu görev kalıcı olarak silinecek!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, sil',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/api/tasks/${taskId}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: 'Silindi!',
+                                text: 'Görev başarıyla silindi.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                loadTasks(); // Görevleri yeniden yükle
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Hata!',
+                                text: data.error || 'Görev silinirken bir hata oluştu.',
+                                icon: 'error',
+                                confirmButtonText: 'Tamam'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Silme hatası:', error);
+                        Swal.fire({
+                            title: 'Hata!',
+                            text: 'Sunucu ile iletişim kurulurken bir hata oluştu.',
+                            icon: 'error',
+                            confirmButtonText: 'Tamam'
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+
+    <!-- CSS eklemeleri -->
+    <style>
+    .btn-archive {
+        background: #64748B;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-right: 12px;
+    }
+
+    .btn-archive:hover {
+        background: #475569;
+        transform: translateY(-1px);
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+    }
+    </style>
+</body>
+</html> 

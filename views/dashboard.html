@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - İş Takip Sistemi</title>
+    <link rel="icon" type="image/x-icon" href="https://static-00.iconduck.com/assets.00/user-icon-1024x1024-dtzturco.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>İş Takip</h3>
+                <button class="btn-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h6 id="userName">Kullanıcı Adı</h6>
+                    <span id="userRole" class="user-role">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="/dashboard" data-title="Ana Sayfa">
+                            <i class="bi bi-house-door"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tasks" data-title="Görevler">
+                            <i class="bi bi-list-task"></i>
+                            <span>Görevler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/requests" data-title="İstekler">
+                            <i class="bi bi-envelope"></i>
+                            <span>İstekler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/service" data-title="Servis">
+                            <i class="bi bi-folder"></i>
+                            <span>Servis</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/calendar" data-title="Takvim">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Takvim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/reports" data-title="Raporlar">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Raporlar</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-bottom">
+                        <a href="/settings" data-title="Ayarlar">
+                            <i class="bi bi-gear"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/logout" class="logout-link" data-title="Çıkış Yap">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h4>Hoş Geldiniz!</h4>
+                </div>
+                <div class="header-right">
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="widgets-container">
+                    <div class="widget pending-tasks">
+                        <div class="widget-icon">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <div class="widget-content">
+                            <h3>Bekleyen İşler</h3>
+                            <div class="widget-number">12</div>
+                           
+                        </div>
+                    </div>
+
+                    <div class="widget completed-tasks">
+                        <div class="widget-icon">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
+                        <div class="widget-content">
+                            <h3>Tamamlanan İşler</h3>
+                            <div class="widget-number">28</div>
+                          
+                        </div>
+                    </div>
+
+                    <div class="widget requests">
+                        <div class="widget-icon">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+                        <div class="widget-content">
+                            <h3>Yeni İstekler</h3>
+                            <div class="widget-number">5</div>
+                           
+                        </div>
+                    </div>
+                </div>
+
+                <div class="announcements-section">
+                    <div class="section-header">
+                        <h4>Duyurular</h4>
+                        <button class="btn-new-announcement" onclick="showAnnouncementModal()">
+                            <i class="bi bi-plus-lg"></i>
+                            Yeni Duyuru
+                        </button>
+                    </div>
+
+                    <div class="announcements-container">
+                        <!-- Örnek Duyurular -->
+                        <!--
+                        <div class="announcement-card">
+                            <div class="announcement-header">
+                                <div class="user-info">
+                                    <div class="user-avatar small">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <div class="post-info">
+                                        <h6>Ahmet Yılmaz</h6>
+                                        <span class="timestamp">2 saat önce</span>
+                                    </div>
+                                </div>
+                                <div class="announcement-badge system">Sistem</div>
+                            </div>
+                            <div class="announcement-content">
+                                <p>EDM fatura kesilemiyor. Sebebi: Gelir İdaresi Başkanlığı 24.02.2025 - 28.02.2025 tarihleri arasında bakım çalışması yapmaktadır.</p>
+                            </div>
+                        </div>
+
+                        <div class="announcement-card">
+                            <div class="announcement-header">
+                                <div class="user-info">
+                                    <div class="user-avatar small">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <div class="post-info">
+                                        <h6>Mehmet Demir</h6>
+                                        <span class="timestamp">5 saat önce</span>
+                                    </div>
+                                </div>
+                                <div class="announcement-badge urgent">Acil</div>
+                            </div>
+                            <div class="announcement-content">
+                                <p>Sunucu bakımı nedeniyle yarın saat 18:00'de sistemde 30 dakikalık bir kesinti yaşanacaktır.</p>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duyuru Modal -->
+    <div class="announcement-modal" id="announcementModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Yeni Duyuru Oluştur</h5>
+                <button class="btn-close" onclick="hideAnnouncementModal()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="announcementForm">
+                    <div class="form-group">
+                        <label>Duyuru Başlığı</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Duyuru Tipi</label>
+                                <select class="form-control" name="type" required>
+                                    <option value="bilgi">Bilgi</option>
+                                    <option value="sistem">Sistem</option>
+                                    <option value="acil">Acil</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Başlangıç Tarihi</label>
+                                <input type="datetime-local" class="form-control" name="start_date" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Bitiş Tarihi</label>
+                                <input type="datetime-local" class="form-control" name="end_date" required>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="hideAnnouncementModal()">İptal</button>
+                <button class="btn-submit" onclick="saveAnnouncement()">Paylaş</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sidebar toggle
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // Kullanıcı bilgilerini al ve göster
+        fetch('/api/user-info')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('userName').textContent = data.name;
+                document.getElementById('userRole').textContent = 
+                    data.role === 'admin' ? 'Yönetici' : 'Çalışan';
+            });
+
+        // Dashboard istatistiklerini yükle
+        loadDashboardStats();
+    });
+
+    function loadDashboardStats() {
+        fetch('/api/dashboard/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const stats = data.stats;
+                    
+                    // Bekleyen işler
+                    document.querySelector('.pending-tasks .widget-number')
+                        .textContent = stats.pendingTasks;
+                    
+                    // Tamamlanan işler
+                    document.querySelector('.completed-tasks .widget-number')
+                        .textContent = stats.completedTasks;
+                    
+                    // Yeni istekler
+                    document.querySelector('.requests .widget-number')
+                        .textContent = stats.requests;
+                }
+            })
+            .catch(error => {
+                console.error('Dashboard istatistikleri yükleme hatası:', error);
+            });
+    }
+
+    // Modal işlemleri
+    function showAnnouncementModal() {
+        // Başlangıç tarihini şu anki zamana ayarla
+        const now = new Date();
+        const startDate = now.toISOString().slice(0, 16); // YYYY-MM-DDThh:mm formatı
+        
+        // Bitiş tarihini 1 gün sonraya ayarla
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const endDate = tomorrow.toISOString().slice(0, 16);
+        
+        // Form alanlarını varsayılan değerlerle doldur
+        document.querySelector('input[name="start_date"]').value = startDate;
+        document.querySelector('input[name="end_date"]').value = endDate;
+        
+        document.getElementById('announcementModal').classList.add('show');
+    }
+
+    function hideAnnouncementModal() {
+        document.getElementById('announcementModal').classList.remove('show');
+    }
+
+    // Duyuru kaydetme fonksiyonunu güncelle
+    function saveAnnouncement() {
+        const form = document.getElementById('announcementForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData);
+
+        // Tarihleri MySQL datetime formatına çevir
+        try {
+            // Başlangıç tarihi için
+            const startDate = new Date(data.start_date);
+            data.start_date = startDate.getFullYear() + '-' +
+                String(startDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(startDate.getDate()).padStart(2, '0') + ' ' +
+                String(startDate.getHours()).padStart(2, '0') + ':' +
+                String(startDate.getMinutes()).padStart(2, '0') + ':00';
+
+            // Bitiş tarihi için
+            const endDate = new Date(data.end_date);
+            data.end_date = endDate.getFullYear() + '-' +
+                String(endDate.getMonth() + 1).padStart(2, '0') + '-' +
+                String(endDate.getDate()).padStart(2, '0') + ' ' +
+                String(endDate.getHours()).padStart(2, '0') + ':' +
+                String(endDate.getMinutes()).padStart(2, '0') + ':00';
+
+            console.log('Gönderilecek tarihler:', {
+                start: data.start_date,
+                end: data.end_date
+            });
+
+            fetch('/api/announcements', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: 'Duyuru başarıyla oluşturuldu.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        hideAnnouncementModal();
+                        form.reset();
+                        loadAnnouncements();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.error || 'Duyuru oluşturulurken bir hata oluştu.',
+                        icon: 'error',
+                        confirmButtonText: 'Tamam'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Duyuru kaydetme hatası:', error);
+                Swal.fire({
+                    title: 'Hata!',
+                    text: 'Sunucu ile iletişim kurulurken bir hata oluştu.',
+                    icon: 'error',
+                    confirmButtonText: 'Tamam'
+                });
+            });
+        } catch (error) {
+            console.error('Tarih dönüştürme hatası:', error);
+            Swal.fire({
+                title: 'Hata!',
+                text: 'Tarih formatı geçersiz.',
+                icon: 'error',
+                confirmButtonText: 'Tamam'
+            });
+        }
+    }
+
+    // Duyuruları yükle fonksiyonunu güncelle
+    function loadAnnouncements() {
+        console.log('Duyurular yükleniyor...');
+        fetch('/api/announcements')
+            .then(response => response.json())
+            .then(data => {
+                console.log('API yanıtı:', data);
+                if (data.success) {
+                    const container = document.querySelector('.announcements-container');
+                    container.innerHTML = '';
+
+                    if (data.announcements && data.announcements.length > 0) {
+                        console.log(`${data.announcements.length} adet duyuru bulundu`);
+                        let validAnnouncementCount = 0;
+
+                        data.announcements.forEach(announcement => {
+                            console.log('İşlenen duyuru:', announcement);
+                            const card = createAnnouncementCard(announcement);
+                            if (card) {
+                                console.log('Duyuru kartı oluşturuldu ve ekleniyor');
+                                container.appendChild(card);
+                                validAnnouncementCount++;
+                            } else {
+                                console.log('Duyuru kartı oluşturulamadı (muhtemelen süresi geçmiş)');
+                            }
+                        });
+
+                        console.log(`Toplam ${validAnnouncementCount} geçerli duyuru eklendi`);
+
+                        // Eğer hiç geçerli duyuru yoksa mesaj göster
+                        if (validAnnouncementCount === 0) {
+                            container.innerHTML = `
+                                <div class="no-announcements">
+                                    <p class="text-muted text-center">Aktif duyuru bulunmuyor.</p>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        console.log('Hiç duyuru bulunamadı');
+                        container.innerHTML = `
+                            <div class="no-announcements">
+                                <p class="text-muted text-center">Aktif duyuru bulunmuyor.</p>
+                            </div>
+                        `;
+                    }
+                } else {
+                    console.error('API yanıtı başarısız:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Duyuruları yükleme hatası:', error);
+            });
+    }
+
+    // Duyuru kartı oluşturma fonksiyonunu güncelle
+    function createAnnouncementCard(announcement) {
+        console.log('Duyuru kartı oluşturuluyor:', announcement);
+        
+        // Tarihleri kontrol et
+        const endDate = new Date(announcement.end_date);
+        const now = new Date();
+        
+        console.log('Bitiş tarihi:', endDate);
+        console.log('Şu an:', now);
+        console.log('Süre geçmiş mi:', endDate < now);
+
+        if (endDate < now) {
+            console.log('Duyurunun süresi geçmiş, kart oluşturulmayacak');
+            return null;
+        }
+
+        // Kart oluşturmaya devam et...
+        const card = document.createElement('div');
+        card.className = 'announcement-card';
+        
+        const createdDate = new Date(announcement.created_at);
+        const timeAgo = formatTimeAgo(createdDate);
+        const remainingTime = formatRemainingTime(endDate);
+
+        card.innerHTML = `
+            <div class="announcement-header">
+                <div class="user-info">
+                    <div class="user-avatar small">
+                        <i class="bi bi-person"></i>
+                    </div>
+                    <div class="post-info">
+                        <h6>${announcement.user_name}</h6>
+                        <span class="timestamp">${timeAgo}</span>
+                    </div>
+                </div>
+                <div class="announcement-badge ${announcement.type}">${getAnnouncementTypeText(announcement.type)}</div>
+            </div>
+            <div class="announcement-content">
+                <h6 class="announcement-title">${announcement.title}</h6>
+                <p>${announcement.description}</p>
+                <div class="announcement-expiry">
+                    <small class="text-muted">
+                        <i class="bi bi-clock"></i> 
+                        Kalan süre: ${remainingTime}
+                    </small>
+                </div>
+            </div>
+        `;
+
+        console.log('Duyuru kartı başarıyla oluşturuldu');
+        return card;
+    }
+
+    // Kalan süreyi formatlayan yardımcı fonksiyon
+    function formatRemainingTime(endDate) {
+        const now = new Date();
+        const diff = endDate - now;
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (days > 0) {
+            return `${days} gün ${hours} saat`;
+        } else if (hours > 0) {
+            return `${hours} saat ${minutes} dakika`;
+        } else {
+            return `${minutes} dakika`;
+        }
+    }
+
+    // Yardımcı fonksiyonlar
+    function getAnnouncementTypeText(type) {
+        const types = {
+            'bilgi': 'Bilgi',
+            'sistem': 'Sistem',
+            'acil': 'Acil'
+        };
+        return types[type] || type;
+    }
+
+    function formatTimeAgo(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+
+        if (diffInSeconds < 60) return 'Az önce';
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} dakika önce`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} saat önce`;
+        return `${Math.floor(diffInSeconds / 86400)} gün önce`;
+    }
+
+    // Sayfa yüklendiğinde duyuruları yükle
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAnnouncements();
+    });
+
+    // Periyodik olarak duyuruları yenile (her 5 dakikada bir)
+    setInterval(loadAnnouncements, 300000);
+    </script>
+</body>
+</html> 

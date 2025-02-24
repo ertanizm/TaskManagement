@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İstekler - İş Takip Sistemi</title>
+    <link rel="icon" type="image/x-icon" href="https://static-00.iconduck.com/assets.00/user-icon-1024x1024-dtzturco.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/requests.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>İş Takip</h3>
+                <button class="btn-toggle" id="sidebarToggle">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            <div class="sidebar-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h6 id="userName">Kullanıcı Adı</h6>
+                    <span id="userRole" class="user-role">Rol</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/dashboard" data-title="Ana Sayfa">
+                            <i class="bi bi-house-door"></i>
+                            <span>Ana Sayfa</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/tasks" data-title="Görevler">
+                            <i class="bi bi-list-task"></i>
+                            <span>Görevler</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/requests" data-title="İstekler">
+                            <i class="bi bi-envelope"></i>
+                            <span>İstekler</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/service" data-title="Servis">
+                            <i class="bi bi-folder"></i>
+                            <span>Servis</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/calendar" data-title="Takvim">
+                            <i class="bi bi-calendar3"></i>
+                            <span>Takvim</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/reports" data-title="Raporlar">
+                            <i class="bi bi-bar-chart"></i>
+                            <span>Raporlar</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-bottom">
+                        <a href="/settings" data-title="Ayarlar">
+                            <i class="bi bi-gear"></i>
+                            <span>Ayarlar</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/logout" class="logout-link" data-title="Çıkış Yap">
+                            <i class="bi bi-box-arrow-right"></i>
+                            <span>Çıkış Yap</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="main-content">
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <h4>İstekler</h4>
+                </div>
+            </header>
+
+            <div class="dashboard-content">
+                <div class="request-form-container">
+                    <div class="request-form-section">
+                        <form id="requestForm" class="request-form">
+                            <div class="form-group">
+                                <label>
+                                    <i class="bi bi-tag"></i>
+                                    Başlık
+                                </label>
+                                <input type="text" class="form-control" name="title" required>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <i class="bi bi-text-paragraph"></i>
+                                    Açıklama
+                                </label>
+                                <textarea class="form-control" name="description" rows="4" required></textarea>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>
+                                        <i class="bi bi-grid"></i>
+                                        Modül
+                                    </label>
+                                    <select class="form-control" name="module" required>
+                                        <option value="">Seçiniz...</option>
+                                        <option value="tekstil">Tekstil</option>
+                                        <option value="muhasebe">Muhasebe</option>
+                                        <option value="restoran">Restoran</option>
+                                        <option value="hizlisatis">Hızlı Satış</option>
+                                        <option value="yeni">Yeni</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>
+                                        <i class="bi bi-flag"></i>
+                                        Durum
+                                    </label>
+                                    <select class="form-control" name="status" required>
+                                        <option value="yeni">Yeni</option>
+                                        <option value="mevcut">Mevcut</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit">
+                                    <i class="bi bi-check-lg"></i>
+                                    Kaydet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Kullanıcı bilgilerini getir
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(user => {
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userRole').textContent = 
+                        user.role === 'admin' ? 'Yönetici' : 'Çalışan';
+                });
+
+            // Form submit
+            document.getElementById('requestForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveRequest();
+            });
+        });
+
+        function saveRequest() {
+            const form = document.getElementById('requestForm');
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            fetch('/api/requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Başarılı!',
+                        text: 'İstek başarıyla kaydedildi.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        form.reset();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Hata!',
+                        text: data.error || 'İstek kaydedilirken bir hata oluştu.',
+                        icon: 'error',
+                        confirmButtonText: 'Tamam'
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html> 
