@@ -3,7 +3,7 @@ const mysql = require('mysql2');
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: '',
+    password: 'Oklava.123123',
 });
 
 const initDatabase = () => {
@@ -29,7 +29,8 @@ const initDatabase = () => {
                     email VARCHAR(100) UNIQUE NOT NULL,
                     password VARCHAR(255) NOT NULL,
                     role ENUM('admin', 'employee') NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    color VARCHAR(20) DEFAULT '#3788d8'
                 )
             `;
 
@@ -80,6 +81,7 @@ const initDatabase = () => {
                     authorized_person VARCHAR(100) NOT NULL,
                     customer_request TEXT NOT NULL,
                     description TEXT,
+                    image_path VARCHAR(255),
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES users(id)
                 )

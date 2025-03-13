@@ -11,6 +11,7 @@
     <link href="/css/dashboard.css" rel="stylesheet">
     <link href="/css/calendar.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css" />
 </head>
 <body>
     <div class="dashboard-container">
@@ -173,6 +174,8 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/tr.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     <script>
         let calendar;
         let selectedStartDate = null;
@@ -218,7 +221,8 @@
                         id: info.event.id,
                         title: info.event.title,
                         description: info.event.extendedProps.description,
-                        user_name: info.event.extendedProps.user_name
+                        user_name: info.event.extendedProps.user_name,
+                        backgroundColor: info.event.backgroundColor
                     });
                 },
                 headerToolbar: {
@@ -226,7 +230,25 @@
                     center: 'title',
                     right: 'dayGridMonth,timeGridWeek,timeGridDay'
                 },
-                events: '/api/plannings'
+                events: '/api/plannings',
+                eventDidMount: function(info) {
+                    // Tooltip ekle
+                    tippy(info.el, {
+                        content: `
+                            <div class="event-tooltip">
+                                <h4>${info.event.title}</h4>
+                                <p><strong>Oluşturan:</strong> ${info.event.extendedProps.user_name}</p>
+                                ${info.event.extendedProps.description ? `<p><strong>Açıklama:</strong> ${info.event.extendedProps.description}</p>` : ''}
+                                <p><strong>Başlangıç:</strong> ${info.event.start.toLocaleString('tr-TR')}</p>
+                                <p><strong>Bitiş:</strong> ${info.event.end ? info.event.end.toLocaleString('tr-TR') : 'Belirtilmemiş'}</p>
+                            </div>
+                        `,
+                        allowHTML: true,
+                        placement: 'top',
+                        arrow: true,
+                        theme: 'light'
+                    });
+                }
             });
 
             calendar.render();
@@ -255,6 +277,38 @@
                 
                 // Silme butonuna event ID'sini ekle
                 deleteButton.setAttribute('data-event-id', eventData.id);
+                
+                // Kullanıcı rengini göster
+                const colorIndicator = document.createElement('div');
+                colorIndicator.className = 'color-indicator';
+                colorIndicator.style.backgroundColor = eventData.backgroundColor;
+                colorIndicator.style.display = 'inline-block';
+                colorIndicator.style.width = '20px';
+                colorIndicator.style.height = '20px';
+                colorIndicator.style.borderRadius = '50%';
+                colorIndicator.style.marginRight = '10px';
+                colorIndicator.style.verticalAlign = 'middle';
+                
+                const userNameElement = document.createElement('span');
+                userNameElement.textContent = `Oluşturan: ${eventData.user_name}`;
+                
+                const userInfoContainer = document.createElement('div');
+                userInfoContainer.className = 'user-info-container';
+                userInfoContainer.style.marginTop = '15px';
+                userInfoContainer.style.display = 'flex';
+                userInfoContainer.style.alignItems = 'center';
+                
+                userInfoContainer.appendChild(colorIndicator);
+                userInfoContainer.appendChild(userNameElement);
+                
+                // Eğer varsa önceki kullanıcı bilgisini kaldır
+                const existingUserInfo = modal.querySelector('.user-info-container');
+                if (existingUserInfo) {
+                    existingUserInfo.remove();
+                }
+                
+                // Kullanıcı bilgisini ekle
+                modal.querySelector('.modal-body').appendChild(userInfoContainer);
             } else {
                 modalTitle.textContent = 'Yeni Planlama';
                 titleInput.value = '';
@@ -263,6 +317,12 @@
                 descriptionInput.readOnly = false;
                 deleteButton.style.display = 'none';
                 submitButton.style.display = 'flex';
+                
+                // Eğer varsa önceki kullanıcı bilgisini kaldır
+                const existingUserInfo = modal.querySelector('.user-info-container');
+                if (existingUserInfo) {
+                    existingUserInfo.remove();
+                }
             }
 
             modal.classList.add('show');
@@ -369,5 +429,34 @@
             });
         }
     </script>
+    <style>
+        /* Tooltip stilleri */
+        .event-tooltip {
+            padding: 10px;
+            max-width: 300px;
+        }
+
+        .event-tooltip h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .event-tooltip p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        /* Renk göstergesi için stil */
+        .color-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+    </style>
 </body>
 </html> 

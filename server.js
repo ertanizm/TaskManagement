@@ -2,6 +2,8 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 require('dotenv').config();
 
 // Veritabanı bağlantısını içe aktar
@@ -18,6 +20,36 @@ app.use(session({
     resave: false,
     saveUninitialized: true
 }));
+
+// Resim yükleme için klasör oluştur
+const uploadDir = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Multer yapılandırması
+const storage = multer.diskStorage({
+    destination: function(req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function(req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, 'service-' + uniqueSuffix + ext);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: function(req, file, cb) {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Sadece resim dosyaları yüklenebilir!'));
+        }
+    }
+});
 
 // Routes
 app.get('/', (req, res) => {
@@ -152,9 +184,16 @@ app.get('/dashboard', (req, res) => {
 // Kullanıcı bilgilerini getir
 app.get('/api/user-info', (req, res) => {
     if (!req.session.user) {
-        return res.status(401).json({ error: 'Oturum bulunamadı' });
+        return res.status(401).json({ success: false, error: 'Oturum bulunamadı' });
     }
-    res.json(req.session.user);
+    
+    res.json({
+        id: req.session.user.id,
+        name: req.session.user.name,
+        email: req.session.user.email,
+        role: req.session.user.role,
+        color: req.session.user.color || '#3788d8' // Varsayılan renk
+    });
 });
 
 // Çıkış yap
@@ -335,26 +374,81 @@ app.put('/api/tasks/:id', (req, res) => {
     }
 
     const taskId = req.params.id;
-    const { title, description, priority, due_date } = req.body;
+    const { title, description, priority, due_date, status, assigned_user_id } = req.body;
+    const userId = req.session.user.id;
+    const isAdmin = req.session.user.role === 'admin';
 
-    const sql = `UPDATE tasks 
-                SET title = ?, 
-                    description = ?, 
-                    priority = ?, 
-                    due_date = ?
-                WHERE id = ?`;
-
-    connection.query(sql, [title, description, priority, due_date, taskId], (err) => {
+    // Önce görevin mevcut durumunu kontrol et
+    const checkSql = 'SELECT * FROM tasks WHERE id = ?';
+    connection.query(checkSql, [taskId], (err, results) => {
         if (err) {
-            return res.status(500).json({ 
-                success: false, 
-                error: 'Görev güncellenirken hata oluştu' 
+            console.error('Görev kontrol hatası:', err);
+            return res.status(500).json({
+                success: false,
+                error: 'Görev kontrol edilirken bir hata oluştu'
             });
         }
 
-        res.json({ 
-            success: true, 
-            message: 'Görev başarıyla güncellendi' 
+        if (results.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Görev bulunamadı'
+            });
+        }
+
+        const task = results[0];
+        
+        // Admin değilse ve görev kendisine ait değilse güncelleme yapamaz
+        if (!isAdmin && task.user_id !== userId && task.assigned_user_id !== userId) {
+            return res.status(403).json({
+                success: false,
+                error: 'Bu görevi güncelleme yetkiniz yok'
+            });
+        }
+
+        // Tamamlanma tarihini kontrol et
+        let completedDate = task.completed_date;
+        if (status === 'completed' && task.status !== 'completed') {
+            completedDate = new Date();
+        } else if (status !== 'completed') {
+            completedDate = null;
+        }
+
+        // Görev atama durumunu kontrol et
+        const isAssigned = assigned_user_id ? 1 : 0;
+
+        // Güncelleme sorgusu
+        const updateSql = `
+            UPDATE tasks 
+            SET title = ?, description = ?, priority = ?, due_date = ?, 
+                status = ?, completed_date = ?, is_assigned = ?
+            WHERE id = ?
+        `;
+
+        const values = [
+            title,
+            description,
+            priority,
+            due_date,
+            status,
+            completedDate,
+            isAssigned,
+            taskId
+        ];
+
+        connection.query(updateSql, values, (err, result) => {
+            if (err) {
+                console.error('Görev güncelleme hatası:', err);
+                return res.status(500).json({
+                    success: false,
+                    error: 'Görev güncellenirken bir hata oluştu'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: 'Görev başarıyla güncellendi'
+            });
         });
     });
 });
@@ -601,7 +695,7 @@ app.get('/service', (req, res) => {
 });
 
 // Servis API endpoint'leri
-app.post('/api/services', (req, res) => {
+app.post('/api/services', upload.single('service_image'), (req, res) => {
     if (!req.session.user) {
         return res.status(401).json({ success: false, error: 'Oturum bulunamadı' });
     }
@@ -616,6 +710,9 @@ app.post('/api/services', (req, res) => {
         description
     } = req.body;
 
+    // Resim yolu
+    const image_path = req.file ? '/uploads/' + req.file.filename : null;
+
     const sql = `
         INSERT INTO services (
             user_id,
@@ -626,8 +723,9 @@ app.post('/api/services', (req, res) => {
             authorized_person,
             customer_request,
             description,
+            image_path,
             created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `;
 
     const values = [
@@ -638,7 +736,8 @@ app.post('/api/services', (req, res) => {
         tax_number,
         authorized_person,
         customer_request,
-        description
+        description,
+        image_path
     ];
 
     connection.query(sql, values, (err, result) => {
@@ -743,12 +842,21 @@ app.post('/api/plannings', (req, res) => {
     const { title, description, start_date, end_date } = req.body;
     const userId = req.session.user.id;
 
+    // ISO formatındaki tarihleri MySQL formatına dönüştür
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toISOString().slice(0, 19).replace('T', ' ');
+    };
+
+    const formattedStartDate = formatDate(start_date);
+    const formattedEndDate = formatDate(end_date);
+
     const sql = `
         INSERT INTO plannings (user_id, title, description, start_date, end_date)
         VALUES (?, ?, ?, ?, ?)
     `;
 
-    connection.query(sql, [userId, title, description, start_date, end_date], (err, result) => {
+    connection.query(sql, [userId, title, description, formattedStartDate, formattedEndDate], (err, result) => {
         if (err) {
             console.error('Planlama kaydetme hatası:', err);
             return res.status(500).json({
@@ -771,25 +879,14 @@ app.get('/api/plannings', (req, res) => {
         return res.status(401).json({ success: false, error: 'Oturum bulunamadı' });
     }
 
-    const userId = req.session.user.id;
-    const isAdmin = req.session.user.role === 'admin';
-
-    let sql = `
-        SELECT p.*, u.name as user_name
+    const sql = `
+        SELECT p.*, u.name as user_name, u.color as user_color
         FROM plannings p
         JOIN users u ON p.user_id = u.id
+        ORDER BY p.start_date
     `;
 
-    // Admin değilse sadece kendi planlamalarını göster
-    if (!isAdmin) {
-        sql += ` WHERE p.user_id = ? `;
-    }
-
-    sql += ` ORDER BY p.start_date ASC`;
-
-    const params = !isAdmin ? [userId] : [];
-
-    connection.query(sql, params, (err, results) => {
+    connection.query(sql, (err, results) => {
         if (err) {
             console.error('Planlama listeleme hatası:', err);
             return res.status(500).json({
@@ -798,13 +895,18 @@ app.get('/api/plannings', (req, res) => {
             });
         }
 
+        // Planlamaları FullCalendar formatına dönüştür
         const events = results.map(planning => ({
             id: planning.id,
             title: planning.title,
-            description: planning.description,
             start: planning.start_date,
             end: planning.end_date,
+            description: planning.description,
+            user_name: planning.user_name,
+            backgroundColor: planning.user_color || '#3788d8',
+            borderColor: planning.user_color || '#3788d8',
             extendedProps: {
+                description: planning.description,
                 user_name: planning.user_name
             }
         }));
@@ -1212,6 +1314,66 @@ app.get('/settings', (req, res) => {
         return res.redirect('/login');
     }
     res.sendFile(path.join(__dirname, 'views', 'settings.html'));
+});
+
+// Kullanıcı renk güncelleme API'si
+app.post('/api/user/update-color', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, error: 'Oturum bulunamadı' });
+    }
+
+    const { color } = req.body;
+    const userId = req.session.user.id;
+
+    // Renk formatını kontrol et (basit bir kontrol)
+    if (!color || !color.match(/^#[0-9A-Fa-f]{6}$/)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Geçersiz renk formatı. Lütfen geçerli bir HEX renk kodu girin.'
+        });
+    }
+
+    // Rengi güncelle
+    const sql = 'UPDATE users SET color = ? WHERE id = ?';
+    connection.query(sql, [color, userId], (err, result) => {
+        if (err) {
+            console.error('Renk güncelleme hatası:', err);
+            return res.status(500).json({
+                success: false,
+                error: 'Renk güncellenirken bir hata oluştu'
+            });
+        }
+
+        // Oturum bilgisini de güncelle
+        req.session.user.color = color;
+
+        res.json({ success: true });
+    });
+});
+
+// Kullanıcıları listele (sadece admin için)
+app.get('/api/users', (req, res) => {
+    if (!req.session.user) {
+        return res.status(401).json({ success: false, error: 'Oturum bulunamadı' });
+    }
+    
+    // Sadece admin kullanıcıları listeleyebilir
+    if (req.session.user.role !== 'admin') {
+        return res.status(403).json({ success: false, error: 'Bu işlem için yetkiniz yok' });
+    }
+    
+    const sql = 'SELECT id, name FROM users ORDER BY name';
+    connection.query(sql, (err, results) => {
+        if (err) {
+            console.error('Kullanıcı listeleme hatası:', err);
+            return res.status(500).json({
+                success: false,
+                error: 'Kullanıcılar listelenirken bir hata oluştu'
+            });
+        }
+        
+        res.json({ success: true, users: results });
+    });
 });
 
 const PORT = process.env.PORT || 3000;

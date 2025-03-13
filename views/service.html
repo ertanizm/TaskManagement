@@ -164,6 +164,12 @@
                         <label>Açıklama</label>
                         <textarea class="form-control" name="description" rows="3"></textarea>
                     </div>
+
+                    <div class="form-group">
+                        <label>Resim Ekle</label>
+                        <input type="file" class="form-control" name="service_image" accept="image/*">
+                        <small class="text-muted">Servis ile ilgili bir resim ekleyebilirsiniz (isteğe bağlı)</small>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -197,7 +203,78 @@
 
         // Modal işlemleri
         function showNewServiceModal() {
-            document.getElementById('serviceModal').classList.add('show');
+            const modal = document.getElementById('serviceModal');
+            const modalHeader = modal.querySelector('.modal-header h5');
+            const modalBody = modal.querySelector('.modal-body');
+            const modalFooter = modal.querySelector('.modal-footer');
+            
+            // Başlığı güncelle
+            modalHeader.textContent = 'Yeni Servis Talebi';
+            
+            // Form içeriğini oluştur
+            modalBody.innerHTML = `
+                <form id="serviceForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Müşteri Adı</label>
+                                <input type="text" class="form-control" name="customer_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Telefon</label>
+                                <input type="tel" class="form-control" name="phone" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Vergi Dairesi</label>
+                                <input type="text" class="form-control" name="tax_office">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Vergi No</label>
+                                <input type="text" class="form-control" name="tax_number">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Yetkili Kişi</label>
+                        <input type="text" class="form-control" name="authorized_person" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Müşteri Talebi</label>
+                        <textarea class="form-control" name="customer_request" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Resim Ekle</label>
+                        <input type="file" class="form-control" name="service_image" accept="image/*">
+                        <small class="text-muted">Servis ile ilgili bir resim ekleyebilirsiniz (isteğe bağlı)</small>
+                    </div>
+                </form>
+            `;
+            
+            // Footer butonlarını güncelle
+            modalFooter.innerHTML = `
+                <button class="btn-cancel" onclick="hideServiceModal()">İptal</button>
+                <button class="btn-submit" onclick="saveService()">Kaydet</button>
+            `;
+            
+            // Modalı göster
+            modal.classList.add('show');
         }
 
         function hideServiceModal() {
@@ -233,6 +310,8 @@
         function createServiceCard(service) {
             const card = document.createElement('div');
             card.className = 'service-card';
+            card.setAttribute('data-id', service.id);
+            card.addEventListener('click', () => showServiceDetail(service));
             
             const createdDate = new Date(service.created_at);
             const formattedDate = createdDate.toLocaleString('tr-TR', {
@@ -283,7 +362,7 @@
                     ` : ''}
                 </div>
                 <div class="service-footer">
-                    <button class="btn-delete" onclick="deleteService(${service.id})">
+                    <button class="btn-delete" onclick="deleteService(${service.id}); event.stopPropagation();">
                         <i class="bi bi-trash"></i>
                     </button>
                     <span class="created-by">Oluşturan: ${service.created_by}</span>
@@ -291,6 +370,94 @@
             `;
 
             return card;
+        }
+
+        // Servis detay modalını göster
+        function showServiceDetail(service) {
+            const modal = document.getElementById('serviceModal');
+            const modalHeader = modal.querySelector('.modal-header h5');
+            const modalBody = modal.querySelector('.modal-body');
+            const modalFooter = modal.querySelector('.modal-footer');
+            
+            // Başlığı güncelle
+            modalHeader.textContent = `${service.customer_name} - Servis Detayı`;
+            
+            // Form içeriğini oluştur - aynı form yapısını kullan ama değerleri doldur
+            modalBody.innerHTML = `
+                <form id="serviceDetailForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Müşteri Adı</label>
+                                <input type="text" class="form-control" name="customer_name" value="${service.customer_name}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Telefon</label>
+                                <input type="tel" class="form-control" name="phone" value="${service.phone}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Vergi Dairesi</label>
+                                <input type="text" class="form-control" name="tax_office" value="${service.tax_office || ''}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Vergi No</label>
+                                <input type="text" class="form-control" name="tax_number" value="${service.tax_number || ''}" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Yetkili Kişi</label>
+                        <input type="text" class="form-control" name="authorized_person" value="${service.authorized_person}" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Müşteri Talebi</label>
+                        <textarea class="form-control" name="customer_request" rows="3" readonly>${service.customer_request}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3" readonly>${service.description || ''}</textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Oluşturan</label>
+                        <input type="text" class="form-control" value="${service.created_by}" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Oluşturulma Tarihi</label>
+                        <input type="text" class="form-control" value="${new Date(service.created_at).toLocaleString('tr-TR')}" readonly>
+                    </div>
+                </form>
+            `;
+            
+            // Footer butonlarını güncelle
+            if (service.image_path) {
+                modalFooter.innerHTML = `
+                    <button class="btn-cancel" onclick="hideServiceModal()">Kapat</button>
+                    <button class="btn-primary" onclick="window.open('${service.image_path}', '_blank')">
+                        <i class="bi bi-eye"></i> Resmi Görüntüle
+                    </button>
+                `;
+            } else {
+                modalFooter.innerHTML = `
+                    <button class="btn-cancel" onclick="hideServiceModal()">Kapat</button>
+                `;
+            }
+            
+            // Modalı göster
+            modal.classList.add('show');
         }
 
         // Sayfa yüklendiğinde servisleri listele
@@ -302,39 +469,60 @@
         function saveService() {
             const form = document.getElementById('serviceForm');
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData);
-
-            fetch('/api/services', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        title: 'Başarılı!',
-                        text: 'Servis talebi başarıyla oluşturuldu.',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    }).then(() => {
-                        hideServiceModal();
-                        form.reset();
-                        loadServices(); // Servisleri yeniden yükle
-                    });
-                } else {
-                    Swal.fire({
-                        title: 'Hata!',
-                        text: data.error || 'Servis talebi oluşturulurken bir hata oluştu.',
-                        icon: 'error',
-                        confirmButtonText: 'Tamam'
-                    });
-                }
-            })
-            .catch(error => {
+            
+            // Resim dosyası kontrolü
+            const serviceImage = form.querySelector('[name="service_image"]').files[0];
+            
+            if (serviceImage) {
+                // Resim varsa FormData ile gönder
+                fetch('/api/services', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(handleResponse)
+                .catch(handleError);
+            } else {
+                // Resim yoksa JSON olarak gönder
+                const data = Object.fromEntries(formData);
+                delete data.service_image; // Boş dosya alanını kaldır
+                
+                fetch('/api/services', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(handleResponse)
+                .catch(handleError);
+            }
+            
+            function handleResponse(response) {
+                return response.json().then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: 'Başarılı!',
+                            text: 'Servis talebi başarıyla oluşturuldu.',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            hideServiceModal();
+                            form.reset();
+                            loadServices(); // Servisleri yeniden yükle
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Hata!',
+                            text: data.error || 'Servis talebi oluşturulurken bir hata oluştu.',
+                            icon: 'error',
+                            confirmButtonText: 'Tamam'
+                        });
+                    }
+                });
+            }
+            
+            function handleError(error) {
                 console.error('Servis kaydetme hatası:', error);
                 Swal.fire({
                     title: 'Hata!',
@@ -342,7 +530,7 @@
                     icon: 'error',
                     confirmButtonText: 'Tamam'
                 });
-            });
+            }
         }
 
         // Silme fonksiyonunu ekleyelim
